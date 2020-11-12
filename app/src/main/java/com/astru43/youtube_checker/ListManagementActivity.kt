@@ -137,7 +137,7 @@ class ListManagementActivity : AppCompatActivity() {
         }
     }
 
-    fun request() {
+    private fun request() {
         if (account != null) {
             val scopes = mutableListOf(YouTubeScopes.YOUTUBE_READONLY)
             val credential =
