@@ -1,5 +1,13 @@
 <resources>
     <string name="app_name">Youtube list checker</string>
-    <string name="tab_text_1">Tab 1</string>
-    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_1">Additions</string>
+    <string name="tab_text_2">Deletions</string>
+    <string name="tab_text_3">Saved</string>
+    <string name="title_activity_list_management">Management</string>
+    <string name="management_tab_text_1">Compare</string>
+    <string name="management_tab_text_2">Save</string>
+
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="disconnect">Disconnect</string>
 </resources>
