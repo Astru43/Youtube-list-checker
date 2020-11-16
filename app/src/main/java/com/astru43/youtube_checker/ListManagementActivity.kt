@@ -26,10 +26,12 @@ import com.google.api.services.youtube.YouTube
 import com.google.api.services.youtube.YouTubeScopes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.astru43.youtube_checker.util.Account
+
 
 class ListManagementActivity : AppCompatActivity() {
 
-    private var account: GoogleSignInAccount? = null
+    private var account = Account(this)
     lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,25 +56,12 @@ class ListManagementActivity : AppCompatActivity() {
         }
 
 
+
     }
 
     override fun onStart() {
         super.onStart()
-        account = GoogleSignIn.getLastSignedInAccount(this)
-        if (account != null) {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestScopes(
-                    Scope(YouTubeScopes.YOUTUBE_READONLY)
-                ).build()
-            googleSignInClient = GoogleSignIn.getClient(this, gso)
-            val signInIntent = googleSignInClient.signInIntent
-            startActivityForResult(signInIntent, 1)
-        }
-
-        for (i in 0 until 10)
-            Log.w("START", "My message")
-
+        account.getLastAccount(this);
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -84,39 +73,15 @@ class ListManagementActivity : AppCompatActivity() {
 
         when (item.itemId) {
             R.id.login -> {
-                if (account != null) return true
-                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                    .requestEmail()
-                    .requestScopes(
-                        Scope(YouTubeScopes.YOUTUBE_READONLY)
-                    ).build()
-                googleSignInClient = GoogleSignIn.getClient(this, gso)
-
-                val signInIntent = googleSignInClient.signInIntent
-                startActivityForResult(signInIntent, 1)
-
+                Account(this).login(this)
                 return true
             }
             R.id.logout -> {
-                if (account != null) {
-                    googleSignInClient.signOut().addOnCompleteListener {
-                        run {
-                            account = null
-                            Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
+                Account(this).logout()
                 return true
             }
             R.id.disconnect -> {
-                if (account != null) {
-                    googleSignInClient.revokeAccess().addOnCompleteListener {
-                        run {
-                            account = null
-                            Toast.makeText(this, "Account disconnected", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
+
                 return true
             }
         }
@@ -129,7 +94,7 @@ class ListManagementActivity : AppCompatActivity() {
 
         if (requestCode == 1) {
             try {
-                account = GoogleSignIn.getSignedInAccountFromIntent(data)
+                account.account = GoogleSignIn.getSignedInAccountFromIntent(data)
                     .getResult(ApiException::class.java)
             } catch (e: ApiException) {
                 Log.w("Error", "signInResult:failed code=" + e.statusCode)
@@ -138,11 +103,11 @@ class ListManagementActivity : AppCompatActivity() {
     }
 
     private fun request() {
-        if (account != null) {
+        if (account.account != null) {
             val scopes = mutableListOf(YouTubeScopes.YOUTUBE_READONLY)
             val credential =
                 GoogleAccountCredential.usingOAuth2(this, scopes).setBackOff(ExponentialBackOff())
-            credential.selectedAccount = account!!.account
+            credential.selectedAccount = account.account!!.account
 
             Log.i("Account", credential.selectedAccountName)
 
