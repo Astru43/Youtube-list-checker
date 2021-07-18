@@ -15,7 +15,8 @@ class SaveFragment : Fragment() {
             SaveFragment()
     }
 
-    private lateinit var viewModel: SaveViewModel
+    private val viewModel: SaveViewModel by activityViewModels()
+    private lateinit var saveListAdapter: SaveListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,5 +30,4 @@ class SaveFragment : Fragment() {
         viewModel = ViewModelProviders.of(this).get(SaveViewModel::class.java)
         // TODO: Use the ViewModel
     }
-
 }
