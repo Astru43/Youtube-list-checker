@@ -10,4 +10,6 @@
     <string name="login">Login</string>
     <string name="logout">Logout</string>
     <string name="disconnect">Disconnect</string>
+
+    <string name="save_btn">Save</string>
 </resources>

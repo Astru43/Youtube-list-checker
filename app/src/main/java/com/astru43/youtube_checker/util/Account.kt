@@ -1,24 +1,30 @@
 package com.astru43.youtube_checker.util
 
-import android.app.Activity
-import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.widget.Toast
-import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.activity.result.ActivityResultLauncher
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.youtube.YouTubeScopes
 
-class Account(val context: Context) {
+class Account {
 
     var account: GoogleSignInAccount? = null
-    lateinit var googleSignInClient: GoogleSignInClient
+    var credential: GoogleAccountCredential? = null
+    private lateinit var googleSignInClient: GoogleSignInClient
+
+    companion object {
+        val instance = Account()
+    }
 
 
-    fun login(activity: Activity)  {
+    fun login(context: Context, launcher: ActivityResultLauncher<Intent>) {
         if (account != null) return
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
@@ -28,32 +34,34 @@ class Account(val context: Context) {
         googleSignInClient = GoogleSignIn.getClient(context, gso)
 
         val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(activity, signInIntent, 1, null)
+        launcher.launch(signInIntent)
     }
 
-    fun logout() {
+    fun logout(context: Context) {
         if (account != null) {
             googleSignInClient.signOut().addOnCompleteListener {
                 run {
                     account = null
+                    credential = null
                     Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-    fun disconnect() {
+    fun disconnect(context: Context) {
         if (account != null) {
             googleSignInClient.revokeAccess().addOnCompleteListener {
                 run {
                     account = null
+                    credential = null
                     Toast.makeText(context, "Account disconnected", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-    fun getLastAccount(activity: Activity) : Boolean {
+    fun getLastAccount(context: Context) {
         account = GoogleSignIn.getLastSignedInAccount(context)
         if (account != null) {
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -62,9 +70,17 @@ class Account(val context: Context) {
                     Scope(YouTubeScopes.YOUTUBE_READONLY)
                 ).build()
             googleSignInClient = GoogleSignIn.getClient(context, gso)
-            val signInIntent = googleSignInClient.signInIntent
-            startActivityForResult(activity, signInIntent, 1, null)
+
+            getCredential(context)
         }
-        return false
+    }
+
+    fun getCredential(context: Context) {
+        val scopes = mutableListOf(YouTubeScopes.YOUTUBE_READONLY)
+        val credential =
+            GoogleAccountCredential.usingOAuth2(context, scopes)
+                .setBackOff(ExponentialBackOff())
+        credential.selectedAccount = account!!.account
+        this.credential = credential
     }
 }
