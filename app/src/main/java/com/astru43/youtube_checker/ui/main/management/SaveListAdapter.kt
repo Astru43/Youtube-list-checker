@@ -49,4 +49,10 @@ class SaveListAdapter(private val items: List<Playlist>) :
 
     override fun getItemCount(): Int = items.size
 
+    fun unselect() {
+        selectedItem = -1
+        selectedPosition = -1
+        notifyDataSetChanged()
+    }
+
 }
